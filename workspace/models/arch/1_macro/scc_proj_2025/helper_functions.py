@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def helper_funcion(x: int,  y: int = 0) -> int:
     return x ** 2 + y
@@ -41,3 +42,35 @@ def generate_latex_table(df, title="Table Title", caption="Table caption", label
     latex_code = f"\\begin{{table}}[h]\n\\centering\n\\textbf{{{title}}}\n\n{latex_table}\n\\end{{table}}"
 
     return latex_code
+
+def generate_histograms(bitwidth, std, sparsity=.5):
+    """
+    Creates a list of probabilities for quantized values. Meant to be used as value for
+    histogram category in workload yaml file
+
+    Parameters:
+        bitwidth (int): number of bits you are quantizing to, i.e. 4/8
+        std (float): std deviation to be applied to your normal distribution
+        sparsity (float) (optional): what decimal sparsity to apply, i.e. 0.5 for 50%
+    Returns:
+        list<int>: list of probs.
+    
+    """
+    num_bins = 2 ** (bitwidth - 1)
+    bins = np.arange(0.5 - num_bins , num_bins+0.5) # add 0.5 for bin edges
+    probs, _ = np.histogram(np.random.normal(0, std, 100000), bins=bins, density=True)
+    
+    # Apply sparsity (e.g., 50%)
+    # Calculate scaling to make zero bin equal to desired sparsity
+    total = np.sum(probs)
+    zero_ix = num_bins -1
+    current_zero = probs[zero_ix]
+    desired_zero = sparsity * total
+    scaling_factor = (total - desired_zero) / (total - current_zero)
+
+    probs *= scaling_factor
+    probs[zero_ix] = desired_zero  # Set center bin to exact value
+
+    probs /= np.sum(probs)  # Normalize after redistributing mass
+    print("new_changed")
+    return probs.tolist()
