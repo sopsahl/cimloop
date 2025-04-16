@@ -6,42 +6,42 @@ architecture:
   - !Container # Macro top-level
     name: macro
     <<<: [*container_defaults]
-  
+    
+
   - !Component # Output Processing
     name: output_buffer
     <<<: [*component_defaults, *keep_outputs]
     class: smartbuffer_sram_v2 # class provided
     attributes:
-        technology: "5nm"
         depth: 512
         width: 136
-        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        n_rw_ports: 1 # dual port
+
   - !Component
     name: ppu
-    <<<: [*component_defaults,*keep_outputs]
+    <<<: [*component_defaults, *keep_outputs, *no_coalesce]
     subclass: ppu
     attributes:
-        width: 4
-        depth: 1
-    
+        depth: 4
+        width: 1
+
   - !Component
     name: accumulation_collector
     <<<: [*component_defaults,*keep_outputs ]
     class: smartbuffer_sram_v2
     attributes:
-        technology: "5nm"
         depth: 16
         width: 384
-        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+  
   - !Component #Input Buffer
     name: B_Buffer
     <<<: [*component_defaults, *keep_inputs]
     subclass: smartbuffer_sram_v2
     attributes:
-        technology: "5nm"
         depth: 2048
         width: 264
-        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        n_rw_ports: 1 # dual port
+        
 
   - !Container
     name: A_Data_Bnk
@@ -52,35 +52,44 @@ architecture:
     <<<: [*component_defaults,*keep_weights]
     class: smartbuffer_sram_v2
     attributes:
-        technology: "5nm"
         depth: 128
         width: 264
-        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        n_rw_ports: 1 # dual port
         
   - !Component
     name: A_Reg #update every 16 cycles
     <<<: [*component_defaults,*keep_weights]
     subclass: aladdin_register # comes from Aladdin plug-in, idk if we need to change because they only model 40nm
     attributes:
-      technology: "5nm" # using smallest aladdin tech size
+      technology: TECHNOLOGY # using smallest aladdin tech size
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
       width: 264
       depth: 1
     constraints:
       temporal:
         factors: [N=16]
-    
-    
-
+        
+  # - !Hierarchical
+  #   nodes: *virtualized_mac_without_mac_unit
+  - !Container
+    name: MAC_UNIT
+    spatial: {meshX: 64}
   - !Component
-    name: vec_mac_standin
-    class: mac_unit_csv
-    attributes:
-      technology: "5nm"
-      width: 8
-      depth: 1
-      global_cycle_seconds: GLOBAL_CYCLE_SECONDS
-
+    name: vec_mac
+    class: compute
+    subclass: int4_datapath
+    # energy_scale: 1/N_VIRTUAL_MACS
+    # area_scale: 1/N_VIRTUAL_MACS
+    
+  # - !Component
+  #    name: vec_mac_standin
+  #    class: mac_unit_csv
+  #    attributes:
+  #       technology: "5nm"
+  #       width: 8
+  #       depth: 1
+  #       rmw_first_update: false
+  #       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
   
   
         
