@@ -150,7 +150,7 @@ compound_components:
       - name: int4_multiplier
         actions: [{name: write}]
       - name: int4_adder
-        actions: [{name: write, energy_scale: 1/3}] 
+        actions: [{name: write}] 
       - name: int4_partialsum
         actions: [{name: write, energy_scale: 1/64}]
     - &read_action
@@ -159,7 +159,7 @@ compound_components:
       - name: int4_multiplier
         actions: [{name: multiply}]
       - name: int4_adder
-        actions: [{name: add, energy_scale: 1/3}] # assumes there are 64 adders
+        actions: [{name: add}] # assumes there are 64 adders
       - name: int4_partialsum
         actions: [{name: add, energy_scale: 1/64}]
     - name: leak
@@ -167,7 +167,7 @@ compound_components:
       - name: int4_multiplier
         actions: [{name: leak}]
       - name: int4_adder
-        actions: [{name: leak, energy_scale: 1/3}] # assumes there are 64 adders
+        actions: [{name: leak}] # assumes there are 64 adders
       - name: int4_partialsum
         actions: [{name: leak, energy_scale: 1/64}]
     - name: update

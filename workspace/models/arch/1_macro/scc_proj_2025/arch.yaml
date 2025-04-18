@@ -7,7 +7,7 @@ architecture:
     name: macro
     <<<: [*container_defaults]
     
-
+    
   - !Component # Output Processing
     name: output_buffer
     <<<: [*component_defaults, *keep_outputs]
@@ -36,17 +36,19 @@ architecture:
         n_banks: 1
     constraints:
         temporal:
-            factors: [C=16] # tile per vector size
+            factors: [C=128] # tile per vector size
   
   - !Component #Input Buffer
     name: B_Buffer
-    <<<: [*component_defaults, *keep_inputs]
+    <<<: [ *keep_inputs]
+    class: storage
     subclass: smartbuffer_sram_v2
     attributes:
         depth: 2048
         width: 264
         n_rw_ports: 2 # dual port
         n_banks: 1
+        datawidth: 1
     constraints:
         temporal:
             factors: [N=16] # tile per accumulation collector depth
@@ -55,28 +57,36 @@ architecture:
   - !Container
     name: A_Data_Bnk
     spatial: {meshX: 16}
+    <<<: [*container_defaults, *spatial_must_reuse_inputs]
+    constraints:
+        spatial:
+            factors: [M=16]
     
   - !Component
     name: A_Buffer
-    <<<: [*component_defaults,*keep_weights]
+    <<<: [*keep_weights]
     class: smartbuffer_sram_v2
     attributes:
         depth: 128
         width: 264
+        datawidth: 4
         n_rw_ports: 2 # dual port
+        n_banks: 1
     # constraints:
-    #     temporal:
+    #     spatial:
     #         factors: [M=16] # tile per vector lane
         
   - !Component
     name: A_Reg #update every 16 cycles
-    <<<: [*component_defaults,*keep_weights]
+    <<<: [*keep_weights]
+    class: storage
     subclass: aladdin_register # comes from Aladdin plug-in, idk if we need to change because they only model 40nm
     attributes:
       technology: TECHNOLOGY # using smallest aladdin tech size
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
       width: 264
       depth: 1
+      datawidth: 4
     constraints:
       temporal:
         factors: [N=16] # only use reg every 16 cycles
@@ -91,8 +101,8 @@ architecture:
     name: vec_mac
     class: compute
     subclass: int4_datapath
-    # energy_scale: 1/N_VIRTUAL_MACS
-    # area_scale: 1/N_VIRTUAL_MACS
+    energy_scale: 1/N_VIRTUAL_MACS
+    area_scale: 1/N_VIRTUAL_MACS
     
   # - !Component
   #    name: vec_mac_standin

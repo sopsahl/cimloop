@@ -55,6 +55,7 @@ def test_mm_energy_breakdown():
             WEIGHT_BITS=4,
             OUTPUT_BITS=4,
         ),
+        system="fetch_all_lpddr4",
     )
 
     results.clear_zero_areas()
