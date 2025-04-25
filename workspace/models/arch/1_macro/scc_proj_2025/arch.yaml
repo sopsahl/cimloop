@@ -1,3 +1,5 @@
+        
+     
 {{include_text('defines.yaml')}}
 
 architecture:
@@ -17,6 +19,7 @@ architecture:
         width: 136
         n_rw_ports: 2 # dual port
         n_banks: 1
+        datawidth: 4
 
   - !Component
     name: ppu
@@ -24,7 +27,8 @@ architecture:
     subclass: ppu
     attributes:
         depth: INF
-        width: 1
+        width: INF
+       # datawidth: 4
 
   - !Component
     name: accumulation_collector
@@ -34,9 +38,10 @@ architecture:
         depth: 16
         width: 384
         n_banks: 1
-    constraints:
-        temporal:
-            factors: [C=128] # tile per vector size
+        datawidth: 24
+    # constraints:
+    #     temporal:
+    #         factors: [C=128] # tile per vector size
   
   - !Component #Input Buffer
     name: B_Buffer
@@ -48,10 +53,10 @@ architecture:
         width: 264
         n_rw_ports: 2 # dual port
         n_banks: 1
-        datawidth: 1
+        datawidth: 4
     constraints:
         temporal:
-            factors: [N=16] # tile per accumulation collector depth
+            factors: [N=1, M=1, C=1] # tile per accumulation collector depth
         
 
   - !Container
@@ -72,10 +77,35 @@ architecture:
         datawidth: 4
         n_rw_ports: 2 # dual port
         n_banks: 1
-    # constraints:
-    #     spatial:
-    #         factors: [M=16] # tile per vector lane
+    constraints:
+        temporal:
+            factors_only: [C=128] # tile per vector lane
+
+  # - !Component
+  #   name: B_Reg #fudges a proper multicast
+  #   <<<: [*keep_inputs]
+  #   class: storage
+  #   subclass: dummy_storage # 
+  #   attributes:
+  #     technology: TECHNOLOGY 
+  #     global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+  #     width: 64
+  #     depth: 1
+  #     datawidth: 4
+  #   constraints:
+  #     temporal:
+  #       factors: [M=1, N=1, C=1]
+
         
+  # - !Hierarchical
+  #   nodes: *virtualized_mac_without_mac_unit
+  - !Container
+    name: MAC_UNIT
+    spatial: {meshX: 64}
+    constraints:
+        spatial:
+            factors_only: [C=64] # tile per vector lane
+
   - !Component
     name: A_Reg #update every 16 cycles
     <<<: [*keep_weights]
@@ -84,25 +114,23 @@ architecture:
     attributes:
       technology: TECHNOLOGY # using smallest aladdin tech size
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
-      width: 264
+      width: 4
       depth: 1
       datawidth: 4
     constraints:
       temporal:
-        factors: [N=16] # only use reg every 16 cycles
-        
-  - !Hierarchical
-    nodes: *virtualized_mac_without_mac_unit
-  - !Container
-    name: MAC_UNIT
-    spatial: {meshX: 64}
+        factors_only: [N=16]
+
+
+
   
   - !Component
     name: vec_mac
     class: compute
     subclass: int4_datapath
-    energy_scale: 1/N_VIRTUAL_MACS
-    area_scale: 1/N_VIRTUAL_MACS
+   
+    # energy_scale: 1/N_VIRTUAL_MACS
+    # area_scale: 1/N_VIRTUAL_MACS
     
   # - !Component
   #    name: vec_mac_standin
@@ -113,18 +141,10 @@ architecture:
   #       depth: 1
   #       rmw_first_update: false
   #       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+
+
   
   
-        
-  
- 
-  
-  
-    
-    
-    
-  
-    
   
         
-     
+

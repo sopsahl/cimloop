@@ -116,7 +116,8 @@ compound_components:
   ## int4 datapath
   - name: int4_datapath
     attributes:
-        width: 4
+        width: 64
+        datawidth: 4
         depth: 1
         global_cycle_seconds: GLOBAL_CYCLE_SECONDS
         technology: TECHNOLOGY
@@ -152,7 +153,7 @@ compound_components:
       - name: int4_adder
         actions: [{name: write}] 
       - name: int4_partialsum
-        actions: [{name: write, energy_scale: 1/64}]
+        actions: [{name: write}] #, energy_scale: 1/64}]
     - &read_action
       name: read
       subcomponents:
@@ -161,7 +162,7 @@ compound_components:
       - name: int4_adder
         actions: [{name: add}] # assumes there are 64 adders
       - name: int4_partialsum
-        actions: [{name: add, energy_scale: 1/64}]
+        actions: [{name: add}] #, energy_scale: 1/64}]
     - name: leak
       subcomponents:
       - name: int4_multiplier
@@ -169,7 +170,7 @@ compound_components:
       - name: int4_adder
         actions: [{name: leak}] # assumes there are 64 adders
       - name: int4_partialsum
-        actions: [{name: leak, energy_scale: 1/64}]
+        actions: [{name: leak}] #, energy_scale: 1/64}]
     - name: update
       << : *write_action # Update is the same as write
     - name: compute

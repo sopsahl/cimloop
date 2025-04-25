@@ -2,8 +2,7 @@
 
 problem:
   <<<: *problem_base
-  instance: {C: 8192, M: 16, N: 16, R: 1, S: 1, P: 1, Q: 1, X: 4, Y: 4, Z: 4}
-
+  instance: {C: 8192, M: 512, N: 64, R: 1, S: 1, P: 1, Q: 1, X: 1, Y: 1, Z: 1}
   name: MatMul
   dnn_name: None
   notes: Matmul
