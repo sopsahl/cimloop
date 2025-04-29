@@ -19,6 +19,8 @@ architecture:
         width: 136
         datawidth: PRECISION
         n_rw_ports: 1
+        n_banks: 1
+        energy_scale: 1
     constraints: {temporal: {maximize_dims: [[N]], maximize_dims_capacity: 64 }}
     
   - !Component
@@ -53,6 +55,8 @@ architecture:
         width: 264
         n_rw_ports: 2
         datawidth: PRECISION
+        n_banks: 1
+        energy_scale: 0.27 # empirical to get ratio about right
     constraints:
         temporal:
             factors: [N=1, M=1, C=1]
@@ -74,6 +78,8 @@ architecture:
         width: 264
         n_rw_ports: 2
         datawidth: PRECISION
+        n_banks: 1
+        energy_scale: 1
     constraints:
         temporal:
             factors: [C=128, M=1, N=1]
