@@ -13,6 +13,12 @@ variables:
   INPUT_BITS:  8
   OUTPUT_BITS: 8
   BATCH_SIZE:  16
+  PRECISION: 4 # 4 bits
+  REUSE: 128 # Always this much as stated by paper
+  VS: 64 # either 32 or 64 depending on precision
+  VL: 16 # always 16
+  HIDDEN_DIM: 8192 #VS*REUSE, either 4096 or 8192
+  
 
   # Set by CiM processor if these values are available in the workload.
   # Otherwise, use the defaults here.
@@ -30,4 +36,4 @@ variables:
   TECHNOLOGY: "5nm"
   VOLTAGE_ENERGY_SCALE: (VOLTAGE / 1) ** 2
   VOLTAGE_LATENCY_SCALE: 1 / VOLTAGE
-  PRECISION: 4 # 4 bits
+  

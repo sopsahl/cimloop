@@ -97,6 +97,36 @@ def test_sparsemm_energy_breakdown(sparsity, bitwidth):
     results.clear_zero_energies()
     return results
 
+def test_idle_energy_breakdown(sparsity, bitwidth):
+    """
+    ### Matrix Multiply Energy Breakdown 
+
+    This test evaluates the energy breakdown for a matrix multiply workload
+    where both input matrix A and weight matrix B are drawn from a Gaussian
+    distribution with inputted sparsity.
+    
+    Possible Parameters for future:
+        bitwdith (int) (optional): size of input bits, if you're using INT4/INT4-VSQ or INT8
+        sparsity (float) (optional): decimal sparsity amount, 0.5 == 50% sparsity
+        std (float) (optional): standard deviationi for Gaussian distribution
+    """
+
+    results = utl.run_layer(
+        macro=MACRO_NAME,
+        layer="arch/1_macro/scc_proj_2025/workloads/all_zeros.yaml",
+        variables=dict(
+            INPUT_BITS=bitwidth,
+            WEIGHT_BITS=bitwidth,
+            OUTPUT_BITS=bitwidth,
+            sparsity=sparsity
+        ),
+        system="fetch_all_lpddr4",
+    )
+
+    results.clear_zero_areas()
+    results.clear_zero_energies()
+    return results
+
 
 # def sweep_sparsities(bitwidth=4, technology='5nm'):
 #     """

@@ -19,8 +19,8 @@ variables:
   ENCODED_WEIGHT_BITS: WEIGHT_BITS
   ENCODED_OUTPUT_BITS: OUTPUT_BITS * (2 if QUANTIZE else 1)
 
-  INPUT_ENCODING_FUNC: offset_encode_hist  # Unsigned encoding for inputs and weights
-  WEIGHT_ENCODING_FUNC: offset_encode_hist # Unsigned encoding for inputs and weights
+  INPUT_ENCODING_FUNC: all_zero_encode #offset_encode_hist # Unsigned encoding for inputs and weights 
+  WEIGHT_ENCODING_FUNC:  all_zero_encode #offset_encode_hist # Unsigned encoding for inputs and weights
 
   # ===========================================================================
   # Architecture parameters

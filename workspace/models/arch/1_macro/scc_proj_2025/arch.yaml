@@ -1,4 +1,8 @@
 {{include_text('defines.yaml')}}
+{% set VL = 16 %} # always 16
+{% set VS = 64 %} #either 64 or 32
+{% set HIDDEN_DIM = 8192 %} # VS*REUSE, where REUSE=128. either 8192 or 4096
+{% set OUTPUT_STATIONARY = HIDDEN_DIM//VS %}
 
 architecture:
   nodes: &macro # TOP MACRO
@@ -21,7 +25,7 @@ architecture:
         n_rw_ports: 1
         n_banks: 1
         energy_scale: 1
-    constraints: {temporal: {maximize_dims: [[N]], maximize_dims_capacity: 64 }}
+    constraints: {temporal: {maximize_dims: [[N]], maximize_dims_capacity: VS }}
     
   - !Component
     name: PPU
@@ -63,11 +67,11 @@ architecture:
             
   - !Container
     name: A_Data_Bnk
-    spatial: {meshX: 16}
+    spatial: {meshX: VL}
     <<<: [*container_defaults, *spatial_must_reuse_inputs]
     constraints:
         spatial:
-            factors: [M=16]
+            factors: [M={{ VL }}]
     
   - !Component
     name: A_Buffer
@@ -82,7 +86,7 @@ architecture:
         energy_scale: 1
     constraints:
         temporal:
-            factors: [C=128, M=1, N=1]
+            factors: [C= {{OUTPUT_STATIONARY}}, M=1, N=1]
 
 
   # ===========================================================================
@@ -98,11 +102,11 @@ architecture:
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
       width: 256
       depth: 1
-      datawidth: 4
+      datawidth: PRECISION
       fanout: 1
     constraints:
       temporal:
-        factors_only: [N=16]
+        factors_only: [N= {{VL}}]
 
   - !Component
     name: B_Reg
@@ -114,7 +118,7 @@ architecture:
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
       width: 256
       depth: 1
-      datawidth: 4
+      datawidth: PRECISION
       fanout: 1
     constraints:
       temporal:
@@ -126,10 +130,10 @@ architecture:
 
   - !Container
     name: MAC_UNIT
-    spatial: {meshX: 64}
+    spatial: {meshX: VS}
     constraints:
         spatial:
-            factors_only: [C=64] 
+            factors_only: [C= {{VS}}] 
 
   - !Component
     name: mac

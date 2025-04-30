@@ -3,7 +3,7 @@
 problem:
   <<: *problem_base
   instance: 
-    C: 8192
+    C: HIDDEN_DIM
     M: 16
     N: 16
     R: 1
