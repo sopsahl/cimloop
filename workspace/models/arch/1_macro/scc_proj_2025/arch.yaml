@@ -1,8 +1,19 @@
 {{include_text('defines.yaml')}}
+# Set which datapath you want to use. Only one should be True at a time
+{% set ENABLE_INT4 = False %}
+{% set ENABLE_INT4VSQ = True %}
+{% set ENABLE_INT8 = False %}
+# vars for setting tiling and workload
 {% set VL = 16 %} # always 16
-{% set VS = 64 %} #either 64 or 32
-{% set HIDDEN_DIM = 8192 %} # VS*REUSE, where REUSE=128. either 8192 or 4096
+{% if ENABLE_INT8 %}
+  {% set VS = 32 %}
+  {% set HIDDEN_DIM = 4096 %}
+{% elif ENABLE_INT4 or ENABLE_INT4VSQ %}
+  {% set VS = 64 %}
+  {% set HIDDEN_DIM = 8192 %}
+{% endif %}
 {% set OUTPUT_STATIONARY = HIDDEN_DIM//VS %}
+
 
 architecture:
   nodes: &macro # TOP MACRO
@@ -136,9 +147,22 @@ architecture:
             factors_only: [C= {{VS}}] 
 
   - !Component
-    name: mac
+    name: mac4
     class: compute
     subclass: int4_datapath
+    enabled: {{ENABLE_INT4}}
+
+  - !Component
+    name: mac4_vsq
+    class: compute
+    subclass: int4vsq_datapath
+    enabled: {{ENABLE_INT4VSQ}}
+
+  - !Component
+    name: mac8
+    class: compute
+    subclass: int8_datapath
+    enabled: {{ENABLE_INT8}}
 
    
 

@@ -22,6 +22,7 @@ variables:
 
   # Set by CiM processor if these values are available in the workload.
   # Otherwise, use the defaults here.
+  # Not really important
   INPUTS_HIST:  ([5,5,6,6,7,7,8,8,8,7,7,6,6,5,5])
   WEIGHTS_HIST: ([5,5,6,6,7,7,8,8,8,7,7,6,6,5,5])
   OUTPUTS_HIST: INPUTS_HIST

@@ -164,15 +164,15 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-      {name: int4_multiplier, actions: [{name: multiply}]}, 
-      {name: int4_adder, actions: [{name: add}]}, 
-      {name: int4_partialsum, actions: [{name: add, energy_scale: 1/scale}]}
+      {name: int4_multiplier, actions: [{name: multiply, energy_scale: 1.6}]}, 
+      {name: int4_adder, actions: [{name: add, energy_scale: 1.6}]}, 
+      {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*1.6}]}
       ]
     - name: leak
       subcomponents: [
-      {name: int4_multiplier, actions: [{name: leak}]}, 
-      {name: int4_adder, actions: [{name: leak}]}, 
-      {name: int4_partialsum, actions: [{name: leak, energy_scale: 1/scale}]},
+      {name: int4_multiplier, actions: [{name: leak, energy_scale: 1.6}]}, 
+      {name: int4_adder, actions: [{name: leak, energy_scale: 1.6}]}, 
+      {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale)*1.6}]},
       ]
 
 
