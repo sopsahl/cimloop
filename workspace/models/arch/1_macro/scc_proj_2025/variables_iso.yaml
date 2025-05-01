@@ -13,11 +13,11 @@ variables:
   INPUT_BITS:  8
   OUTPUT_BITS: 8
   BATCH_SIZE:  16
-  PRECISION: 8 # 4 bits or 8 bits
+  PRECISION: 4 # 4 bits or 8 bits
   REUSE: 128 # Always this much as stated by paper
-  VS: 32 # either 32 (8) or 64 (4) depending on precision
+  VS: 64 # either 32 (8) or 64 (4) depending on precision
   VL: 16 # always 16
-  HIDDEN_DIM: 4096 #VS*REUSE, either 4096 (8) or 8192 (4)
+  HIDDEN_DIM: 8192 #VS*REUSE, either 4096 (8) or 8192 (4)
   
 
   # Set by CiM processor if these values are available in the workload.
@@ -33,8 +33,8 @@ variables:
   SUPPORTED_OUTPUT_BITS: 16      # Maximum output bits supported by the arch.
 
   # Circuits ------------------------------------------------------------------
-  VOLTAGE: 0.46 #voltage used to generate 1.1ns clock
+  VOLTAGE: 0.67 #voltage used to generate 1.1ns clock
   TECHNOLOGY: "5nm"
-  VOLTAGE_ENERGY_SCALE: (VOLTAGE / 1) ** 2
+  VOLTAGE_ENERGY_SCALE: (VOLTAGE / 0.67) ** 2
   VOLTAGE_LATENCY_SCALE: 1 / VOLTAGE
   

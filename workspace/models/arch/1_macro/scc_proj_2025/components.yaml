@@ -53,18 +53,18 @@ compound_components:
     - &write_action
       name: write
       subcomponents: [
-      {name: storage, actions: [{name: write, energy_scale: energy_scale}]}, 
-      {name: address_generator, actions: [{name: add}]}
+      {name: storage, actions: [{name: write, energy_scale: energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add, energy_scale: voltage_energy_scale}]}
       ]
     - name: read
       subcomponents: [
-      {name: storage, actions: [{name: read, energy_scale: energy_scale}]},
-      {name: address_generator, actions: [{name: add}]}
+      {name: storage, actions: [{name: read, energy_scale: energy_scale * voltage_energy_scale}]},
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
       ]
     - name: leak
       subcomponents: [
-      {name: storage, actions: [{name: leak, energy_scale: energy_scale}]},
-      {name: address_generator, actions: [{name: leak}]}
+      {name: storage, actions: [{name: leak, energy_scale: energy_scale * voltage_energy_scale}]},
+      {name: address_generator, actions: [{name: leak,energy_scale: voltage_energy_scale}]}
       ]
     - name: update
       <<: *write_action
@@ -120,23 +120,23 @@ compound_components:
     - &write_action
       name: write
       subcomponents: [
-      {name: storage, actions: [{name: write, energy_scale: SRAM_energy_scale}]}, 
-      {name: address_generator, actions: [{name: add}]}
+      {name: storage, actions: [{name: write, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
       ]
     - name: read
       subcomponents: [
-      {name: storage, actions: [{name: read, energy_scale: SRAM_energy_scale}]}, 
-      {name: address_generator, actions: [{name: add}]}
+      {name: storage, actions: [{name: read, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
       ]
     - name: leak
       subcomponents: [
-      {name: storage, actions: [{name: leak, energy_scale: SRAM_energy_scale}]}, 
-      {name: address_generator, actions: [{name: leak}]}
+      {name: storage, actions: [{name: leak, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: leak,energy_scale: voltage_energy_scale}]}
       ]
     - name: update
       subcomponents: [
-      {name: storage, actions: [{name: update, energy_scale: SRAM_energy_scale}]}, 
-      {name: address_generator, actions: [{name: add}]}
+      {name: storage, actions: [{name: update, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
       ]
 
 
@@ -185,15 +185,15 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-      {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2}]}, 
-      {name: int4_adder, actions: [{name: add, energy_scale: scale2}]}, 
-      {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2}]}
+      {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_adder, actions: [{name: add, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
       ]
     - name: leak
       subcomponents: [
-      {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2}]}, 
-      {name: int4_adder, actions: [{name: leak, energy_scale: scale2}]}, 
-      {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2}]},
+      {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_adder, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]},
       ]
 
 
@@ -262,19 +262,19 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-        {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2 }]}, 
-        {name: int4_adder, actions: [{name: add, energy_scale: scale2 }]},
-        {name: scalefactor_multiplication, actions: [{name: multiply, energy_scale: (1/scale) * scale2}]},
-        {name: saturation_multiplication, actions: [{name: multiply, energy_scale: (1/scale)*scale2}]},
-        {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2}]}
+        {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2  * voltage_energy_scale}]}, 
+        {name: int4_adder, actions: [{name: add, energy_scale: scale2 * voltage_energy_scale }]},
+        {name: scalefactor_multiplication, actions: [{name: multiply, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]},
+        {name: saturation_multiplication, actions: [{name: multiply, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]},
+        {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
         ]
     - name: leak
       subcomponents: [
-        {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2 }]}, 
-        {name: int4_adder, actions: [{name: leak, energy_scale: scale2 }]},
-        {name: scalefactor_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2}]},
-        {name: saturation_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2}]},
-        {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale) * scale2}]}
+        {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale }]}, 
+        {name: int4_adder, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale }]},
+        {name: scalefactor_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]},
+        {name: saturation_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]},
+        {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]}
         ]
 
     
@@ -323,15 +323,15 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-      {name: int8_multiplier, actions: [{name: multiply, energy_scale: scale2}]}, 
-      {name: int8_adder, actions: [{name: add, energy_scale: scale2}]}, 
-      {name: int8_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2}]}
+      {name: int8_multiplier, actions: [{name: multiply, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_adder, actions: [{name: add, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
       ]
     - name: leak
       subcomponents: [
-      {name: int8_multiplier, actions: [{name: leak, energy_scale: scale2}]}, 
-      {name: int8_adder, actions: [{name: leak, energy_scale: scale2}]}, 
-      {name: int8_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2}]}
+      {name: int8_multiplier, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_adder, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
       ]
 
 
@@ -370,13 +370,13 @@ compound_components:
     actions:
     - name: read
       subcomponents: [
-      {name: adds, actions: [{name: read}]}, 
-      {name: comparisons, actions: [{name: read}]}
+      {name: adds, actions: [{name: read, energy_scale: voltage_energy_scale}]}, 
+      {name: comparisons, actions: [{name: read, energy_scale: voltage_energy_scale}]}
       ]
     - name: leak
       subcomponents: [
-      {name: adds, actions: [{name: leak}]}, 
-      {name: comparisons, actions: [{name: leak}]}
+      {name: adds, actions: [{name: leak, energy_scale: voltage_energy_scale}]}, 
+      {name: comparisons, actions: [{name: leak, energy_scale: voltage_energy_scale}]}
       ]
 
 
@@ -446,27 +446,27 @@ compound_components:
     - &write_action
       name: write 
       subcomponents: [
-      {name: scale_buffer, actions: [{name: write}]},
-      {name: bias_buffer, actions: [{name: write}]},
-      {name: vsq_buffer, actions: [{name: write}]},
+      {name: scale_buffer, actions: [{name: write, energy_scale: voltage_energy_scale}]},
+      {name: bias_buffer, actions: [{name: write, energy_scale: voltage_energy_scale}]},
+      {name: vsq_buffer, actions: [{name: write, energy_scale: voltage_energy_scale}]},
       ]
     - name: read
       subcomponents: [
-      {name: scale_buffer, actions: [{name: read, energy_scale: scale}]},
-      {name: bias_buffer, actions: [{name: read, energy_scale: scale}]},
-      {name: matrix_scaler, actions: [{name: multiply}]},
-      {name: bias_adder, actions: [{name: add}]},
-      {name: vsq_buffer, actions: [{name: read}]},
-      {name: approx_softmax, actions: [{name: read}]},
+      {name: scale_buffer, actions: [{name: read, energy_scale: scale * voltage_energy_scale}]},
+      {name: bias_buffer, actions: [{name: read, energy_scale: scale * voltage_energy_scale}]},
+      {name: matrix_scaler, actions: [{name: multiply, energy_scale: voltage_energy_scale}]},
+      {name: bias_adder, actions: [{name: add, energy_scale: voltage_energy_scale}]},
+      {name: vsq_buffer, actions: [{name: read, energy_scale: voltage_energy_scale}]},
+      {name: approx_softmax, actions: [{name: read, energy_scale: voltage_energy_scale}]},
       ]
     - name: leak
       subcomponents: [
-      {name: scale_buffer, actions: [{name: leak}]},
-      {name: bias_buffer, actions: [{name: leak}]},
-      {name: matrix_scaler, actions: [{name: leak}]},
-      {name: bias_adder, actions: [{name: leak}]},
-      {name: vsq_buffer, actions: [{name: leak}]},
-      {name: approx_softmax, actions: [{name: leak}]},
+      {name: scale_buffer, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: bias_buffer, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: matrix_scaler, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: bias_adder, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: vsq_buffer, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: approx_softmax, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
       ]
     - name: update
       << : *write_action
