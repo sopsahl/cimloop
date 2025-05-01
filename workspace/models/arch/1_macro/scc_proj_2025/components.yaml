@@ -20,6 +20,8 @@ compound_components:
       width: "must_specify"
       depth: "must_specify"
       energy_scale: "must_specify"
+      voltage: VOLTAGE
+      voltage_energy_scale: VOLTAGE_ENERGY_SCALE
       
     subcomponents:
     - name: storage
@@ -32,6 +34,8 @@ compound_components:
         technology: technology
         global_cycle_seconds: global_cycle_seconds
         n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
     
     - name: address_generator
       class: aladdin_adder
@@ -42,6 +46,8 @@ compound_components:
         precision: max(1, ceil(log2(depth))) if depth >= 1 else 1
         global_cycle_seconds: global_cycle_seconds
         n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
         
     actions:
     - &write_action
@@ -80,6 +86,8 @@ compound_components:
       n_banks: 1
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
       SRAM_energy_scale: 2.65  # because there is no latch array in Timeloop, we scaled energies to match results
+      voltage: VOLTAGE
+      voltage_energy_scale: VOLTAGE_ENERGY_SCALE
 
     subcomponents:
     - name: storage
@@ -92,6 +100,8 @@ compound_components:
         technology: technology
         global_cycle_seconds: global_cycle_seconds
         n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
     
     - name: address_generator
       class: aladdin_adder
@@ -103,6 +113,8 @@ compound_components:
         datawidth: max(1, ceil(log2(depth))) if depth >= 1 else 1
         global_cycle_seconds: global_cycle_seconds
         n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
    
     actions:
     - &write_action
@@ -139,6 +151,8 @@ compound_components:
         technology: TECHNOLOGY
         scale: 64
         scale2: 1.57 # determined empirically. Scaled to factor in idle energy of INT8 and INT4-VSQ paths
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
         
     subcomponents:
     - name: int4_multiplier
@@ -149,18 +163,24 @@ compound_components:
           width_a: 4
           width_b: 4
           width: 8
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: int4_adder
       class: aladdin_adder
       attributes:
           technology: technology
           global_cycle_seconds: global_cycle_seconds
           width: 14
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: int4_partialsum
       class: aladdin_adder
       attributes:
           global_cycle_seconds: global_cycle_seconds
           technology: technology
           width: 24
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
           
     actions:
     - name: compute
@@ -188,6 +208,8 @@ compound_components:
         technology: TECHNOLOGY
         glocal_cycle_seconds: GLOBAL_CYCLE_SECONDS
         scale2: 1.39 # determined empirically. Scaled to factor in idle energy of INT8 
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
         
     subcomponents:
     - name: int4_multiplier
@@ -198,12 +220,16 @@ compound_components:
           width_a: 4
           width_b: 4
           width: 8
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: int4_adder
       class: aladdin_adder
       attributes:
           technology: technology
           global_cycle_seconds: global_cycle_seconds
           width: 14
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: scalefactor_multiplication ## 8x8 multipliation before rounding
       class: aladdin_multiplier 
       attributes:
@@ -212,6 +238,8 @@ compound_components:
           width_a: 8
           width_b: 8
           width: 16
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: saturation_multiplication ## 14x8 multiplication before saturation
       class: aladdin_multiplier
       attributes:
@@ -220,12 +248,16 @@ compound_components:
           width_a: 14
           width_b: 8
           width: 22
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: int4_partialsum 
       class: aladdin_adder
       attributes:
           technology: TECHNOLOGY
           global_cycle_seconds: GLOBAL_CYCLE_SECONDS
           width: 24
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
 
     actions:
     - name: compute
@@ -257,6 +289,8 @@ compound_components:
         technology: TECHNOLOGY
         scale: 32
         scale2: 1.157 #determined empirically. Scaled to factor in idle energy of INT4 and INT4-VSQ paths
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
         
     subcomponents:
     - name: int8_multiplier
@@ -267,18 +301,24 @@ compound_components:
           width_a: 8
           width_b: 8
           width: 16
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: int8_adder
       class: aladdin_adder
       attributes:
           technology: technology
           global_cycle_seconds: global_cycle_seconds
           width: 21
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
     - name: int8_partialsum
       class: aladdin_adder
       attributes:
           global_cycle_seconds: global_cycle_seconds
           technology: technology
           width: 24
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
           
     actions:
     - name: compute
@@ -307,6 +347,7 @@ compound_components:
         global_cycle_seconds: GLOBAL_CYCLE_SECONDS
         precision: PRECISION
         voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
     subcomponents:
     - name: adds 
       class: aladdin_adder
@@ -316,6 +357,7 @@ compound_components:
         n_instances: ceil(log2(width)) + width + 2 #the number of adds that I saw
         width: precision
         global_cycle_seconds: global_cycle_seconds
+        voltage_energy_scale: voltage_energy_scale
     - name: comparisons 
       class: aladdin_comparator
       attributes:
@@ -324,6 +366,7 @@ compound_components:
         n_instances: ceil(log2(width)) + 1 #the number of comparisons that I saw
         width: precision
         global_cycle_seconds: global_cycle_seconds
+        voltage_energy_scale: voltage_energy_scale
     actions:
     - name: read
       subcomponents: [
@@ -348,6 +391,8 @@ compound_components:
         scale: 32
         technology: TECHNOLOGY
         global_cycle_seconds: GLOABL_CYCLE_SECONDS
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
     subcomponents:
     - name: matrix_scaler
       class: aladdin_multiplier
@@ -358,6 +403,8 @@ compound_components:
          n_instances: scale
          width_b: 8
          width: 20 
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
     - name: bias_adder
       class: aladdin_adder
       attributes:
@@ -365,24 +412,32 @@ compound_components:
          global_cycle_seconds: GLOBAL_CYCLE_SECONDS
          n_instances: scale
          width: 20
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
     - name: scale_buffer
       class: latch_array
       attributes:
          depth: 8
          width: 256
          datawidth: 8
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
     - name: bias_buffer
       class: latch_array
       attributes:
          depth: 8
          width: 128
          datawidth: 8
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
     - name: vsq_buffer
       class: latch_array
       attributes:
          depth: 16
          width: 296
          datawidth: 296
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
     - name: approx_softmax
       class: approx_softmax
      

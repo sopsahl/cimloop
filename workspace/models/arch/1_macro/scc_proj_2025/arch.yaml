@@ -113,6 +113,7 @@ architecture:
       global_cycle_seconds: GLOBAL_CYCLE_SECONDS
       width: 256
       depth: 1
+      voltage: VOLTAGE
       datawidth: PRECISION
       fanout: 1
     constraints:
