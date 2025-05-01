@@ -138,6 +138,7 @@ compound_components:
         global_cycle_seconds: GLOBAL_CYCLE_SECONDS
         technology: TECHNOLOGY
         scale: 64
+        scale2: 1.57 # determined empirically. Scaled to factor in idle energy of INT8 and INT4-VSQ paths
         
     subcomponents:
     - name: int4_multiplier
@@ -164,15 +165,15 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-      {name: int4_multiplier, actions: [{name: multiply, energy_scale: 1.6}]}, 
-      {name: int4_adder, actions: [{name: add, energy_scale: 1.6}]}, 
-      {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*1.6}]}
+      {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2}]}, 
+      {name: int4_adder, actions: [{name: add, energy_scale: scale2}]}, 
+      {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2}]}
       ]
     - name: leak
       subcomponents: [
-      {name: int4_multiplier, actions: [{name: leak, energy_scale: 1.6}]}, 
-      {name: int4_adder, actions: [{name: leak, energy_scale: 1.6}]}, 
-      {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale)*1.6}]},
+      {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2}]}, 
+      {name: int4_adder, actions: [{name: leak, energy_scale: scale2}]}, 
+      {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2}]},
       ]
 
 
@@ -186,6 +187,7 @@ compound_components:
         scale: 64
         technology: TECHNOLOGY
         glocal_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        scale2: 1.39 # determined empirically. Scaled to factor in idle energy of INT8 
         
     subcomponents:
     - name: int4_multiplier
@@ -228,19 +230,19 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-        {name: int4_multiplier, actions: [{name: multiply}]}, 
-        {name: int4_adder, actions: [{name: add}]},
-        {name: scalefactor_multiplication, actions: [{name: multiply, energy_scale: 1/scale}]},
-        {name: saturation_multiplication, actions: [{name: multiply, energy_scale: 1/scale}]},
-        {name: int4_partialsum, actions: [{name: add, energy_scale: 1/scale}]}
+        {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2 }]}, 
+        {name: int4_adder, actions: [{name: add, energy_scale: scale2 }]},
+        {name: scalefactor_multiplication, actions: [{name: multiply, energy_scale: (1/scale) * scale2}]},
+        {name: saturation_multiplication, actions: [{name: multiply, energy_scale: (1/scale)*scale2}]},
+        {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2}]}
         ]
     - name: leak
       subcomponents: [
-        {name: int4_multiplier, actions: [{name: leak}]}, 
-        {name: int4_adder, actions: [{name: leak}]},
-        {name: scalefactor_multiplication, actions: [{name: leak, energy_scale: 1/scale}]},
-        {name: saturation_multiplication, actions: [{name: leak, energy_scale: 1/scale}]},
-        {name: int4_partialsum, actions: [{name: leak, energy_scale: 1/scale}]}
+        {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2 }]}, 
+        {name: int4_adder, actions: [{name: leak, energy_scale: scale2 }]},
+        {name: scalefactor_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2}]},
+        {name: saturation_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2}]},
+        {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale) * scale2}]}
         ]
 
     
@@ -254,6 +256,7 @@ compound_components:
         global_cycle_seconds: GLOBAL_CYCLE_SECONDS
         technology: TECHNOLOGY
         scale: 32
+        scale2: 1.157 #determined empirically. Scaled to factor in idle energy of INT4 and INT4-VSQ paths
         
     subcomponents:
     - name: int8_multiplier
@@ -280,15 +283,15 @@ compound_components:
     actions:
     - name: compute
       subcomponents: [
-      {name: int8_multiplier, actions: [{name: multiply}]}, 
-      {name: int8_adder, actions: [{name: add}]}, 
-      {name: int8_partialsum, actions: [{name: add, energy_scale: 1/scale}]}
+      {name: int8_multiplier, actions: [{name: multiply, energy_scale: scale2}]}, 
+      {name: int8_adder, actions: [{name: add, energy_scale: scale2}]}, 
+      {name: int8_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2}]}
       ]
     - name: leak
       subcomponents: [
-      {name: int8_multiplier, actions: [{name: leak}]}, 
-      {name: int8_adder, actions: [{name: leak}]}, 
-      {name: int8_partialsum, actions: [{name: leak, energy_scale: 1/scale}]}
+      {name: int8_multiplier, actions: [{name: leak, energy_scale: scale2}]}, 
+      {name: int8_adder, actions: [{name: leak, energy_scale: scale2}]}, 
+      {name: int8_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2}]}
       ]
 
 

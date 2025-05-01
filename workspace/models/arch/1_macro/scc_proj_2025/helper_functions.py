@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 def helper_funcion(x: int,  y: int = 0) -> int:
     return x ** 2 + y
@@ -74,3 +75,33 @@ def generate_histograms(bitwidth, std, sparsity=.5):
     probs /= np.sum(probs)  # Normalize after redistributing mass
     print("new_changed")
     return probs.tolist()
+
+def plot_energy_efficiency_vs_voltage(efficiencies,voltages):
+    """
+    Plots efficiences (TOPS/W) vs voltages (V)
+    Parameters:
+        efficiencies (dict(str,list)): dictionary of lists with keys designating the datapath used and value being a list
+                                       of efficiency values. Only accepts keys in ["int8", "int4", "int4vsq"].
+        voltages (list): list of voltages aligned with efficiency values
+    returns:
+        None (graph displayed)
+    """
+    for key in efficiencies.keys():
+        assert key in ["int8", "int4", "int4vsq"]
+
+    int8 = efficiencies["int8"] 
+    int4 = efficiencies["int4"] 
+    int4_vsq = efficiencies["int4vsq"]
+
+    plt.figure(figsize=(8,6))
+    plt.plot(voltages, int8, 'o-', label='INT8')
+    plt.plot(voltages, int4, 's--', label='INT4')
+    plt.plot(voltages, int4_vsq, 'd-.', label='INT4-VSQ')
+
+    plt.xlabel('Voltage (V)')
+    plt.ylabel('Energy Efficiency (TOPS/W)')
+    plt.title('Energy Efficiency vs. Voltage')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()

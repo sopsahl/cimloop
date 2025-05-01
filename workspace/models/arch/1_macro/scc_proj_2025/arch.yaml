@@ -1,8 +1,8 @@
 {{include_text('defines.yaml')}}
 # Set which datapath you want to use. Only one should be True at a time
 {% set ENABLE_INT4 = False %}
-{% set ENABLE_INT4VSQ = True %}
-{% set ENABLE_INT8 = False %}
+{% set ENABLE_INT4VSQ = False %}
+{% set ENABLE_INT8 = True %}
 # vars for setting tiling and workload
 {% set VL = 16 %} # always 16
 {% if ENABLE_INT8 %}
