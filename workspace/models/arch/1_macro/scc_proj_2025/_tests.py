@@ -30,7 +30,7 @@ def test_mm_energy_breakdown(sparsity=1.0, bitwidth=4, voltage=0.67):
             INPUT_BITS=bitwidth,
             WEIGHT_BITS=bitwidth,
             OUTPUT_BITS=bitwidth,
-            PRECISION=4,
+            PRECISION=bitwidth,
             sparsity=sparsity
         ),
         system="fetch_all_lpddr4",

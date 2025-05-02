@@ -9,7 +9,7 @@
   {% set VS = 32 %}
   {% set HIDDEN_DIM = 4096 %}
 {% elif ENABLE_INT4 or ENABLE_INT4VSQ %}
-  {% set VS = 64 %}
+  {% set VS = 8 %}
   {% set HIDDEN_DIM = 8192 %}
 {% endif %}
 {% set OUTPUT_STATIONARY = HIDDEN_DIM//VS %}
