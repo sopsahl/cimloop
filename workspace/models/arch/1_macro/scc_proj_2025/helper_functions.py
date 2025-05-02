@@ -99,8 +99,38 @@ def plot_energy_efficiency_vs_voltage(efficiencies,voltages):
     plt.plot(voltages, int4_vsq, 'd-.', label='INT4-VSQ')
 
     plt.xlabel('Voltage (V)')
-    plt.ylabel('Energy Efficiency (TOPS/W)')
+    plt.ylabel('Normalized Energy Efficiency (TOPS/W)')
     plt.title('Energy Efficiency vs. Voltage')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def plot_energy_efficiency_vs_technology(efficiencies,technologies):
+    """
+    Plots efficiences (TOPS/W) vs technologies (nm)
+    Parameters:
+        efficiencies (dict(str,list)): dictionary of lists with keys designating the datapath used and value being a list
+                                       of efficiency values. Only accepts keys in ["int8", "int4", "int4vsq"].
+        technologies (list): list of technologies aligned with efficiency values
+    returns:
+        None (graph displayed)
+    """
+    for key in efficiencies.keys():
+        assert key in ["int8", "int4", "int4vsq"]
+
+    int8 = efficiencies["int8"] 
+    int4 = efficiencies["int4"] 
+    int4_vsq = efficiencies["int4vsq"]
+
+    plt.figure(figsize=(8,6))
+    plt.plot(voltages, int8, 'o-', label='INT8')
+    plt.plot(voltages, int4, 's--', label='INT4')
+    plt.plot(voltages, int4_vsq, 'd-.', label='INT4-VSQ')
+
+    plt.xlabel('Technology (nm)')
+    plt.ylabel('Normalized Energy Efficiency (TOPS/W)')
+    plt.title('Energy Efficiency vs. Technology')
     plt.grid(True)
     plt.legend()
     plt.tight_layout()

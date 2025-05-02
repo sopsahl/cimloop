@@ -15,7 +15,7 @@ variables:
   BATCH_SIZE:  16
   PRECISION: 4 # 4 bits or 8 bits
   REUSE: 128 # Always this much as stated by paper
-  VS: 64 # either 32 (8) or 64 (4) depending on precision
+  VS: 32 # either 32 (8) or 64 (4) depending on precision
   VL: 16 # always 16
   HIDDEN_DIM: 8192 #VS*REUSE, either 4096 (8) or 8192 (4)
   
