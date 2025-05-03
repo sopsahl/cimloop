@@ -45,7 +45,7 @@ def sweep_voltages(precision=4):
 
     """
     topsw = []
-    voltages = [0.67, 0.46, 0.5, 0.55, 0.60, 0.75, 0.85, 0.95, 1.05]
+    voltages = [ 0.46, 0.5, 0.55, 0.60, 0.67, 0.75, 0.85, 0.95, 1.05]
     for voltage in voltages:
         
         results = utl.run_layer(
