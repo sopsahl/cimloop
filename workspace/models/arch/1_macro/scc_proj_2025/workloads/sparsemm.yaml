@@ -1,0 +1,27 @@
+{{include_text("/home/workspace/models/workloads/problem_base.yaml")}}
+
+problem:
+  <<: *problem_base
+  instance: 
+    C: HIDDEN_DIM
+    M: 16
+    N: 16
+    R: 1
+    S: 1
+    P: 1
+    Q: 1
+    X: 1
+    Y: 1
+    G: 1
+    Z: 1
+    densities:
+      Weights: 
+        distribution: 'hypergeometric'
+        density: {{ 1 - (sparsity | default(0.7)) }}
+      Inputs: 
+        distribution: 'hypergeometric'
+        density: {{ 1 - (sparsity | default(0.7)) }}
+  name: MatMul
+  dnn_name: None
+  notes: Matmul
+ 

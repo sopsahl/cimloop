@@ -1,0 +1,40 @@
+# These variables pertain to the workload, microarch, and circuits. They should
+# be matched between architectures when comparing for a fair comparison.
+# Furthermore, this file should follow the same format for all architectures
+# such that we can mix and match architectures with different iso files.
+variables:
+  version: 0.4
+  # ===========================================================================
+  # Workload, microarch, circuits. Things that should be matched
+  # between architectures when comparing.
+  # ===========================================================================
+  ## Workload -----------------------------------------------------------------
+  WEIGHT_BITS: 8
+  INPUT_BITS:  8
+  OUTPUT_BITS: 8
+  BATCH_SIZE:  16
+  PRECISION: 8 # 4 bits or 8 bits
+  REUSE: 128 # Always this much as stated by paper
+  VS: 32 # either 32 (8) or 64 (4) depending on precision
+  VL: 16 # always 16
+  HIDDEN_DIM: 4096 #VS*REUSE, either 4096 (8) or 8192 (4)
+  
+
+  # Set by CiM processor if these values are available in the workload.
+  # Otherwise, use the defaults here.
+  # Not really important
+  INPUTS_HIST:  ([5,5,6,6,7,7,8,8,8,7,7,6,6,5,5])
+  WEIGHTS_HIST: ([5,5,6,6,7,7,8,8,8,7,7,6,6,5,5])
+  OUTPUTS_HIST: INPUTS_HIST
+
+  ## Microarch ----------------------------------------------------------------
+  SUPPORTED_INPUT_BITS:  8       # Maximum input bits supported by the arch.
+  SUPPORTED_WEIGHT_BITS: 8       # Maximum weight bits supported by the arch.
+  SUPPORTED_OUTPUT_BITS: 16      # Maximum output bits supported by the arch.
+
+  # Circuits ------------------------------------------------------------------
+  VOLTAGE: 0.67 #voltage used to generate 1.1ns clock
+  TECHNOLOGY: "5nm"
+  VOLTAGE_ENERGY_SCALE: (VOLTAGE / 0.67) ** 2
+  VOLTAGE_LATENCY_SCALE: 1 / VOLTAGE
+  

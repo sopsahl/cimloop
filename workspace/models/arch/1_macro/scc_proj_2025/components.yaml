@@ -1,0 +1,477 @@
+compound_components:
+  version: 0.4         
+  classes:
+
+  # ===========================================================================
+  # SRAM class 
+  #    width
+  #    depth
+  #    n_rw_ports
+  #    datawidth
+  # ===========================================================================
+    
+  - name: smartbuffer_sram_v2
+    attributes:
+      technology: TECHNOLOGY
+      global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+      n_banks: "must_specify"
+      datawidth: "must_specify"
+      n_rw_ports: "must_specify"
+      width: "must_specify"
+      depth: "must_specify"
+      energy_scale: "must_specify"
+      voltage: VOLTAGE
+      voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+      
+    subcomponents:
+    - name: storage
+      class: SRAM
+      attributes:
+        width: width
+        depth: depth
+        datawidth: datawidth
+        n_rw_ports: n_rw_ports
+        technology: technology
+        global_cycle_seconds: global_cycle_seconds
+        n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
+    
+    - name: address_generator
+      class: aladdin_adder
+      attributes:
+        technology: technology
+        n_instances: 2 * n_rw_ports
+        n_bits: max(1, ceil(log2(depth))) if depth >= 1 else 1
+        precision: max(1, ceil(log2(depth))) if depth >= 1 else 1
+        global_cycle_seconds: global_cycle_seconds
+        n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
+        
+    actions:
+    - &write_action
+      name: write
+      subcomponents: [
+      {name: storage, actions: [{name: write, energy_scale: energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add, energy_scale: voltage_energy_scale}]}
+      ]
+    - name: read
+      subcomponents: [
+      {name: storage, actions: [{name: read, energy_scale: energy_scale * voltage_energy_scale}]},
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
+      ]
+    - name: leak
+      subcomponents: [
+      {name: storage, actions: [{name: leak, energy_scale: energy_scale * voltage_energy_scale}]},
+      {name: address_generator, actions: [{name: leak,energy_scale: voltage_energy_scale}]}
+      ]
+    - name: update
+      <<: *write_action
+      
+  # ===========================================================================
+  # Latch Array class 
+  #    width
+  #    depth
+  #    datawidth
+  # ===========================================================================
+
+  - name: latch_array
+    attributes:
+      technology: TECHNOLOGY
+      width: "must_specify"
+      depth: "must_specify"
+      datawidth: "must_specify"
+      n_rw_ports: 2
+      n_banks: 1
+      global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+      SRAM_energy_scale: 2.65  # because there is no latch array in Timeloop, we scaled energies to match results
+      voltage: VOLTAGE
+      voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+
+    subcomponents:
+    - name: storage
+      class: SRAM
+      attributes:
+        width: width
+        depth: depth
+        datawidth: datawidth
+        n_rw_ports: n_rw_ports
+        technology: technology
+        global_cycle_seconds: global_cycle_seconds
+        n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
+    
+    - name: address_generator
+      class: aladdin_adder
+      attributes:
+        technology: technology
+        n_instances: 2 * n_rw_ports 
+        n_bits: max(1, ceil(log2(depth))) if depth >= 1 else 1
+        precision: max(1, ceil(log2(depth))) if depth >= 1 else 1
+        datawidth: max(1, ceil(log2(depth))) if depth >= 1 else 1
+        global_cycle_seconds: global_cycle_seconds
+        n_banks: n_banks
+        voltage: voltage
+        voltage_energy_scale: voltage_energy_scale
+   
+    actions:
+    - &write_action
+      name: write
+      subcomponents: [
+      {name: storage, actions: [{name: write, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
+      ]
+    - name: read
+      subcomponents: [
+      {name: storage, actions: [{name: read, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
+      ]
+    - name: leak
+      subcomponents: [
+      {name: storage, actions: [{name: leak, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: leak,energy_scale: voltage_energy_scale}]}
+      ]
+    - name: update
+      subcomponents: [
+      {name: storage, actions: [{name: update, energy_scale: SRAM_energy_scale * voltage_energy_scale}]}, 
+      {name: address_generator, actions: [{name: add,energy_scale: voltage_energy_scale}]}
+      ]
+
+
+  # ===========================================================================
+  # INT4 Datapath
+  # ===========================================================================
+  - name: int4_datapath
+    attributes:
+        width: 4
+        datawidth: 4
+        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        technology: TECHNOLOGY
+        scale: 64
+        scale2: 1.57 # determined empirically. Scaled to factor in idle energy of INT8 and INT4-VSQ paths
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+        
+    subcomponents:
+    - name: int4_multiplier
+      class: aladdin_multiplier
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width_a: 4
+          width_b: 4
+          width: 8
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: int4_adder
+      class: aladdin_adder
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width: 14
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: int4_partialsum
+      class: aladdin_adder
+      attributes:
+          global_cycle_seconds: global_cycle_seconds
+          technology: technology
+          width: 24
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+          
+    actions:
+    - name: compute
+      subcomponents: [
+      {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_adder, actions: [{name: add, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
+      ]
+    - name: leak
+      subcomponents: [
+      {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_adder, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]},
+      ]
+
+
+  # ===========================================================================
+  # INT4-VSQ Datapath
+  # ===========================================================================
+  - name: int4vsq_datapath
+    attributes:
+        width: 4
+        datawidth: 4
+        scale: 64
+        technology: TECHNOLOGY
+        glocal_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        scale2: 1.39 # determined empirically. Scaled to factor in idle energy of INT8 
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+        
+    subcomponents:
+    - name: int4_multiplier
+      class: aladdin_multiplier
+      attributes:
+          technology: TECHNOLOGY
+          global_cycle_seconds: global_cycle_seconds
+          width_a: 4
+          width_b: 4
+          width: 8
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: int4_adder
+      class: aladdin_adder
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width: 14
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: scalefactor_multiplication ## 8x8 multipliation before rounding
+      class: aladdin_multiplier 
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width_a: 8
+          width_b: 8
+          width: 16
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: saturation_multiplication ## 14x8 multiplication before saturation
+      class: aladdin_multiplier
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width_a: 14
+          width_b: 8
+          width: 22
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: int4_partialsum 
+      class: aladdin_adder
+      attributes:
+          technology: TECHNOLOGY
+          global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+          width: 24
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+
+    actions:
+    - name: compute
+      subcomponents: [
+        {name: int4_multiplier, actions: [{name: multiply, energy_scale: scale2  * voltage_energy_scale}]}, 
+        {name: int4_adder, actions: [{name: add, energy_scale: scale2 * voltage_energy_scale }]},
+        {name: scalefactor_multiplication, actions: [{name: multiply, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]},
+        {name: saturation_multiplication, actions: [{name: multiply, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]},
+        {name: int4_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
+        ]
+    - name: leak
+      subcomponents: [
+        {name: int4_multiplier, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale }]}, 
+        {name: int4_adder, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale }]},
+        {name: scalefactor_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]},
+        {name: saturation_multiplication, actions: [{name: leak, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]},
+        {name: int4_partialsum, actions: [{name: leak, energy_scale: (1/scale) * scale2 * voltage_energy_scale}]}
+        ]
+
+    
+  # ===========================================================================
+  # INT8 Datapath
+  # ===========================================================================
+  - name: int8_datapath
+    attributes:
+        width: 8
+        datawidth: 8
+        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        technology: TECHNOLOGY
+        scale: 32
+        scale2: 1.157 #determined empirically. Scaled to factor in idle energy of INT4 and INT4-VSQ paths
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+        
+    subcomponents:
+    - name: int8_multiplier
+      class: aladdin_multiplier
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width_a: 8
+          width_b: 8
+          width: 16
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: int8_adder
+      class: aladdin_adder
+      attributes:
+          technology: technology
+          global_cycle_seconds: global_cycle_seconds
+          width: 21
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+    - name: int8_partialsum
+      class: aladdin_adder
+      attributes:
+          global_cycle_seconds: global_cycle_seconds
+          technology: technology
+          width: 24
+          voltage: voltage
+          voltage_energy_scale: voltage_energy_scale
+          
+    actions:
+    - name: compute
+      subcomponents: [
+      {name: int8_multiplier, actions: [{name: multiply, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_adder, actions: [{name: add, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_partialsum, actions: [{name: add, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
+      ]
+    - name: leak
+      subcomponents: [
+      {name: int8_multiplier, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_adder, actions: [{name: leak, energy_scale: scale2 * voltage_energy_scale}]}, 
+      {name: int8_partialsum, actions: [{name: leak, energy_scale: (1/scale)*scale2 * voltage_energy_scale}]}
+      ]
+
+
+  # ===========================================================================
+  # Approx Softmax
+  # ===========================================================================
+  
+  - name: approx_softmax 
+    attributes:
+        width: 256//PRECISION
+        depth: 1
+        technology: TECHNOLOGY
+        global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+        precision: PRECISION
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+    subcomponents:
+    - name: adds 
+      class: aladdin_adder
+      attributes:
+        technology: technology
+        voltage: voltage
+        n_instances: ceil(log2(width)) + width + 2 #the number of adds that I saw
+        width: precision
+        global_cycle_seconds: global_cycle_seconds
+        voltage_energy_scale: voltage_energy_scale
+    - name: comparisons 
+      class: aladdin_comparator
+      attributes:
+        technology: technology
+        voltage: voltage
+        n_instances: ceil(log2(width)) + 1 #the number of comparisons that I saw
+        width: precision
+        global_cycle_seconds: global_cycle_seconds
+        voltage_energy_scale: voltage_energy_scale
+    actions:
+    - name: read
+      subcomponents: [
+      {name: adds, actions: [{name: read, energy_scale: voltage_energy_scale}]}, 
+      {name: comparisons, actions: [{name: read, energy_scale: voltage_energy_scale}]}
+      ]
+    - name: leak
+      subcomponents: [
+      {name: adds, actions: [{name: leak, energy_scale: voltage_energy_scale}]}, 
+      {name: comparisons, actions: [{name: leak, energy_scale: voltage_energy_scale}]}
+      ]
+
+
+  # ===========================================================================
+  # Post Processing Unit
+  # ===========================================================================
+     
+  - name: ppu
+    attributes:
+        width: 640 # 32 values in parallel
+        datawidth: 20 # 20 bits per saturated value
+        scale: 32
+        technology: TECHNOLOGY
+        global_cycle_seconds: GLOABL_CYCLE_SECONDS
+        voltage: VOLTAGE
+        voltage_energy_scale: VOLTAGE_ENERGY_SCALE
+    subcomponents:
+    - name: matrix_scaler
+      class: aladdin_multiplier
+      attributes:
+         technology: technology
+         global_cycle_seconds: global_cycle_seconds
+         width_a: datawidth
+         n_instances: scale
+         width_b: 8
+         width: 20 
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
+    - name: bias_adder
+      class: aladdin_adder
+      attributes:
+         technology: TECHNOLOGY 
+         global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+         n_instances: scale
+         width: 20
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
+    - name: scale_buffer
+      class: latch_array
+      attributes:
+         depth: 8
+         width: 256
+         datawidth: 8
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
+    - name: bias_buffer
+      class: latch_array
+      attributes:
+         depth: 8
+         width: 128
+         datawidth: 8
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
+    - name: vsq_buffer
+      class: latch_array
+      attributes:
+         depth: 16
+         width: 296
+         datawidth: 296
+         voltage: voltage
+         voltage_energy_scale: voltage_energy_scale
+    - name: approx_softmax
+      class: approx_softmax
+     
+         
+    actions:
+    - &write_action
+      name: write 
+      subcomponents: [
+      {name: scale_buffer, actions: [{name: write, energy_scale: voltage_energy_scale}]},
+      {name: bias_buffer, actions: [{name: write, energy_scale: voltage_energy_scale}]},
+      {name: vsq_buffer, actions: [{name: write, energy_scale: voltage_energy_scale}]},
+      ]
+    - name: read
+      subcomponents: [
+      {name: scale_buffer, actions: [{name: read, energy_scale: scale * voltage_energy_scale}]},
+      {name: bias_buffer, actions: [{name: read, energy_scale: scale * voltage_energy_scale}]},
+      {name: matrix_scaler, actions: [{name: multiply, energy_scale: voltage_energy_scale}]},
+      {name: bias_adder, actions: [{name: add, energy_scale: voltage_energy_scale}]},
+      {name: vsq_buffer, actions: [{name: read, energy_scale: voltage_energy_scale}]},
+      {name: approx_softmax, actions: [{name: read, energy_scale: voltage_energy_scale}]},
+      ]
+    - name: leak
+      subcomponents: [
+      {name: scale_buffer, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: bias_buffer, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: matrix_scaler, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: bias_adder, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: vsq_buffer, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      {name: approx_softmax, actions: [{name: leak, energy_scale: voltage_energy_scale}]},
+      ]
+    - name: update
+      << : *write_action
+  
+    
+  
+     
+

@@ -1,0 +1,174 @@
+{{include_text('defines.yaml')}}
+# Set which datapath you want to use. Only one should be True at a time
+{% set ENABLE_INT4 = False%}
+{% set ENABLE_INT4VSQ = False %}
+{% set ENABLE_INT8 = True %}
+# vars for setting tiling and workload
+{% set VL = 16 %} # always 16
+{% if ENABLE_INT8 %}
+  {% set VS = 32 %}
+  {% set HIDDEN_DIM = 4096 %}
+{% elif ENABLE_INT4 or ENABLE_INT4VSQ %}
+  {% set VS = 64 %}
+  {% set HIDDEN_DIM = 8192 %}
+{% endif %}
+{% set OUTPUT_STATIONARY = HIDDEN_DIM//VS %}
+
+
+architecture:
+  nodes: &macro # TOP MACRO
+  # ===========================================================================
+  - !Container # Macro top-level
+    name: macro
+    <<<: [*container_defaults]
+
+  # ===========================================================================
+  # Accumulation Collector -> PPU -> Output Buffer
+  # ===========================================================================
+  - !Component 
+    name: output_buffer
+    <<<: [*component_defaults, *keep_outputs]
+    class: smartbuffer_sram_v2 
+    attributes:
+        depth: 512
+        width: 136
+        datawidth: PRECISION
+        n_rw_ports: 1
+        n_banks: 1
+        energy_scale: 1
+    constraints: {temporal: {maximize_dims: [[N]], maximize_dims_capacity: VS }}
+    
+  - !Component
+    name: PPU
+    <<<: [*component_defaults, *keep_outputs, *no_coalesce]
+    subclass: ppu
+    attributes:
+        depth: INF
+        width: INF
+
+
+  - !Component
+    name: accumulation_collector
+    <<<: [*keep_outputs]
+    class: storage
+    subclass: latch_array 
+    attributes:
+        depth: 16
+        width: 384
+        datawidth: 24
+
+  # ===========================================================================
+  # B Buffer, 16 x A Buffer 
+  # ===========================================================================
+  - !Component
+    name: B_Buffer
+    <<<: [ *keep_inputs]
+    class: storage
+    subclass: smartbuffer_sram_v2
+    attributes:
+        depth: 2048
+        width: 264
+        n_rw_ports: 2
+        datawidth: PRECISION
+        n_banks: 1
+        energy_scale: 0.27 # empirical to get ratio about right
+    constraints:
+        temporal:
+            factors: [N=1, M=1, C=1]
+            
+  - !Container
+    name: A_Data_Bnk
+    spatial: {meshX: VL}
+    <<<: [*container_defaults, *spatial_must_reuse_inputs]
+    constraints:
+        spatial:
+            factors: [M={{ VL }}]
+    
+  - !Component
+    name: A_Buffer
+    <<<: [*keep_weights]
+    class: smartbuffer_sram_v2
+    attributes:
+        depth: 128
+        width: 264
+        n_rw_ports: 2
+        datawidth: PRECISION
+        n_banks: 1
+        energy_scale: 1
+    constraints:
+        temporal:
+            factors: [C= {{OUTPUT_STATIONARY}}, M=1, N=1]
+
+
+  # ===========================================================================
+  #  A Reg , B Reg (no energy) -> MAC
+  # ===========================================================================
+  - !Component
+    name: A_Reg 
+    <<<: [*keep_weights]
+    class: storage
+    subclass: aladdin_register 
+    attributes:
+      technology: TECHNOLOGY 
+      global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+      width: 256
+      depth: 1
+      voltage: VOLTAGE
+      datawidth: PRECISION
+      fanout: 1
+    constraints:
+      temporal:
+        factors_only: [N= {{VL}}]
+
+  - !Component
+    name: B_Reg
+    <<<: [*keep_inputs]
+    class: storage
+    subclass: dummy_storage
+    attributes:
+      technology: TECHNOLOGY 
+      global_cycle_seconds: GLOBAL_CYCLE_SECONDS
+      width: 256
+      depth: 1
+      datawidth: PRECISION
+      fanout: 1
+    constraints:
+      temporal:
+        factors: [M=1, N=1, C=1]
+
+  # ===========================================================================
+  #  64 x MAC
+  # ===========================================================================        
+
+  - !Container
+    name: MAC_UNIT
+    spatial: {meshX: VS}
+    constraints:
+        spatial:
+            factors_only: [C= {{VS}}] 
+
+  - !Component
+    name: mac4
+    class: compute
+    subclass: int4_datapath
+    enabled: {{ENABLE_INT4}}
+
+  - !Component
+    name: mac4_vsq
+    class: compute
+    subclass: int4vsq_datapath
+    enabled: {{ENABLE_INT4VSQ}}
+
+  - !Component
+    name: mac8
+    class: compute
+    subclass: int8_datapath
+    enabled: {{ENABLE_INT8}}
+
+   
+
+  
+  
+  
+        
+

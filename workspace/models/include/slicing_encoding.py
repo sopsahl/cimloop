@@ -105,6 +105,15 @@ def zero_gated_xnor_encode_hist(weights):
     )
     return encoded
 
+def all_zero_encode(weights):
+    nbits = get_num_bits(weights)
+    encoded = []
+    for prob in weights:
+        bits = [0] * nbits
+        encoded.append(ProbableBits(bits, prob))
+    return encoded
+    
+
 # ==============================================================================
 # Helper functions
 # ==============================================================================
